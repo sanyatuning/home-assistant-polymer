@@ -14,6 +14,7 @@ import "./ha-form-integer";
 import "./ha-form-float";
 import "./ha-form-boolean";
 import "./ha-form-select";
+import "./ha-form-multi_select";
 import "./ha-form-positive_time_period_dict";
 import { fireEvent } from "../../common/dom/fire_event";
 
@@ -23,6 +24,7 @@ export type HaFormSchema =
   | HaFormFloatSchema
   | HaFormBooleanSchema
   | HaFormSelectSchema
+  | HaFormMultiSelectSchema
   | HaFormTimeSchema;
 
 export interface HaFormBaseSchema {
@@ -42,6 +44,11 @@ export interface HaFormIntegerSchema extends HaFormBaseSchema {
 
 export interface HaFormSelectSchema extends HaFormBaseSchema {
   type: "select";
+  options?: string[];
+}
+
+export interface HaFormMultiSelectSchema extends HaFormBaseSchema {
+  type: "multi_select";
   options?: string[];
 }
 
@@ -72,6 +79,7 @@ export type HaFormData =
   | HaFormFloatData
   | HaFormBooleanData
   | HaFormSelectData
+  | HaFormMultiSelectData
   | HaFormTimeData;
 
 export type HaFormStringData = string;
@@ -79,6 +87,7 @@ export type HaFormIntegerData = number;
 export type HaFormFloatData = number;
 export type HaFormBooleanData = boolean;
 export type HaFormSelectData = string;
+export type HaFormMultiSelectData = string[];
 export interface HaFormTimeData {
   hours?: number;
   minutes?: number;
