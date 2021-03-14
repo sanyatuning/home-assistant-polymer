@@ -44,13 +44,13 @@ class HassioCardContent extends LitElement {
       ${this.iconImage
         ? html`
             <div class="icon_image ${this.iconClass}">
-              <img src="${this.iconImage}" title="${this.iconTitle}" />
+              <img src="${this.iconImage}" .title=${this.iconTitle} />
               <div></div>
             </div>
           `
         : html`
             <ha-svg-icon
-              class=${this.iconClass}
+              class=${this.iconClass!}
               .path=${this.icon}
               .title=${this.iconTitle}
             ></ha-svg-icon>

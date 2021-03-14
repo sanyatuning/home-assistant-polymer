@@ -1,5 +1,11 @@
-import "@material/mwc-fab";
-import { mdiCog, mdiContentDuplicate, mdiPlus, mdiRobot } from "@mdi/js";
+import "@material/mwc-icon-button";
+import {
+  mdiCog,
+  mdiContentDuplicate,
+  mdiHelpCircle,
+  mdiPlus,
+  mdiRobot,
+} from "@mdi/js";
 import {
   customElement,
   html,
@@ -11,6 +17,7 @@ import {
 import memoizeOne from "memoize-one";
 import { DataTableColumnContainer } from "../../../components/data-table/ha-data-table";
 import "../../../components/ha-card";
+import "../../../components/ha-fab";
 import "../../../components/ha-relative-time";
 import { showAutomationEditor, TagTrigger } from "../../../data/automation";
 import {
@@ -23,11 +30,15 @@ import {
   updateTag,
   UpdateTagParams,
 } from "../../../data/tag";
-import { showConfirmationDialog } from "../../../dialogs/generic/show-dialog-box";
+import {
+  showAlertDialog,
+  showConfirmationDialog,
+} from "../../../dialogs/generic/show-dialog-box";
 import { getExternalConfig } from "../../../external_app/external_config";
 import "../../../layouts/hass-tabs-subpage-data-table";
 import { SubscribeMixin } from "../../../mixins/subscribe-mixin";
 import { HomeAssistant, Route } from "../../../types";
+import { documentationUrl } from "../../../util/documentation-url";
 import { configSections } from "../ha-panel-config";
 import { showTagDetailDialog } from "./show-dialog-tag-detail";
 import "./tag-image";
@@ -63,7 +74,7 @@ export class HaConfigTags extends SubscribeMixin(LitElement) {
           template: (_icon, tag) => html`<tag-image .tag=${tag}></tag-image>`,
         },
         display_name: {
-          title: this.hass.localize("ui.panel.config.tags.headers.name"),
+          title: this.hass.localize("ui.panel.config.tag.headers.name"),
           sortable: true,
           filterable: true,
           grows: true,
@@ -73,18 +84,16 @@ export class HaConfigTags extends SubscribeMixin(LitElement) {
                 ${tag.last_scanned_datetime
                   ? html`<ha-relative-time
                       .hass=${this.hass}
-                      .datetimeObj=${tag.last_scanned_datetime}
+                      .datetime=${tag.last_scanned_datetime}
                     ></ha-relative-time>`
-                  : this.hass.localize("ui.panel.config.tags.never_scanned")}
+                  : this.hass.localize("ui.panel.config.tag.never_scanned")}
               </div>`
             : ""}`,
         },
       };
       if (!narrow) {
         columns.last_scanned_datetime = {
-          title: this.hass.localize(
-            "ui.panel.config.tags.headers.last_scanned"
-          ),
+          title: this.hass.localize("ui.panel.config.tag.headers.last_scanned"),
           sortable: true,
           direction: "desc",
           width: "20%",
@@ -92,9 +101,9 @@ export class HaConfigTags extends SubscribeMixin(LitElement) {
             ${last_scanned_datetime
               ? html`<ha-relative-time
                   .hass=${this.hass}
-                  .datetimeObj=${last_scanned_datetime}
+                  .datetime=${last_scanned_datetime}
                 ></ha-relative-time>`
-              : this.hass.localize("ui.panel.config.tags.never_scanned")}
+              : this.hass.localize("ui.panel.config.tag.never_scanned")}
           `,
         };
       }
@@ -106,7 +115,7 @@ export class HaConfigTags extends SubscribeMixin(LitElement) {
             .tag=${tag}
             @click=${(ev: Event) =>
               this._openWrite((ev.currentTarget as any).tag)}
-            title=${this.hass.localize("ui.panel.config.tags.write")}
+            title=${this.hass.localize("ui.panel.config.tag.write")}
           >
             <ha-svg-icon .path=${mdiContentDuplicate}></ha-svg-icon>
           </mwc-icon-button>`,
@@ -119,7 +128,7 @@ export class HaConfigTags extends SubscribeMixin(LitElement) {
           .tag=${tag}
           @click=${(ev: Event) =>
             this._createAutomation((ev.currentTarget as any).tag)}
-          title=${this.hass.localize("ui.panel.config.tags.create_automation")}
+          title=${this.hass.localize("ui.panel.config.tag.create_automation")}
         >
           <ha-svg-icon .path=${mdiRobot}></ha-svg-icon>
         </mwc-icon-button>`,
@@ -131,7 +140,7 @@ export class HaConfigTags extends SubscribeMixin(LitElement) {
           .tag=${tag}
           @click=${(ev: Event) =>
             this._openDialog((ev.currentTarget as any).tag)}
-          title=${this.hass.localize("ui.panel.config.tags.edit")}
+          title=${this.hass.localize("ui.panel.config.tag.edit")}
         >
           <ha-svg-icon .path=${mdiCog}></ha-svg-icon>
         </mwc-icon-button>`,
@@ -190,18 +199,53 @@ export class HaConfigTags extends SubscribeMixin(LitElement) {
           this.hass.language
         )}
         .data=${this._data(this._tags)}
-        .noDataText=${this.hass.localize("ui.panel.config.tags.no_tags")}
+        .noDataText=${this.hass.localize("ui.panel.config.tag.no_tags")}
         hasFab
       >
-        <mwc-fab
+        <mwc-icon-button slot="toolbar-icon" @click=${this._showHelp}>
+          <ha-svg-icon .path=${mdiHelpCircle}></ha-svg-icon>
+        </mwc-icon-button>
+        <ha-fab
           slot="fab"
-          title=${this.hass.localize("ui.panel.config.tags.add_tag")}
+          .label=${this.hass.localize("ui.panel.config.tag.add_tag")}
+          extended
           @click=${this._addTag}
         >
           <ha-svg-icon slot="icon" .path=${mdiPlus}></ha-svg-icon>
-        </mwc-fab>
+        </ha-fab>
       </hass-tabs-subpage-data-table>
     `;
+  }
+
+  private _showHelp() {
+    showAlertDialog(this, {
+      title: this.hass.localize("ui.panel.config.tag.caption"),
+      text: html`
+        <p>
+          ${this.hass.localize(
+            "ui.panel.config.tag.detail.usage",
+            "companion_link",
+            html`<a
+              href="https://companion.home-assistant.io/"
+              target="_blank"
+              rel="noreferrer"
+              >${this.hass!.localize(
+                "ui.panel.config.tag.detail.companion_apps"
+              )}</a
+            >`
+          )}
+        </p>
+        <p>
+          <a
+            href="${documentationUrl(this.hass, "/integrations/tag/")}"
+            target="_blank"
+            rel="noreferrer"
+          >
+            ${this.hass.localize("ui.panel.config.tag.learn_more")}
+          </a>
+        </p>
+      `,
+    });
   }
 
   private async _fetchTags() {
@@ -218,7 +262,7 @@ export class HaConfigTags extends SubscribeMixin(LitElement) {
   private _createAutomation(tag: Tag) {
     const data = {
       alias: this.hass.localize(
-        "ui.panel.config.tags.automation_title",
+        "ui.panel.config.tag.automation_title",
         "name",
         tag.name || tag.id
       ),
@@ -266,12 +310,14 @@ export class HaConfigTags extends SubscribeMixin(LitElement) {
   private async _removeTag(selectedTag: Tag) {
     if (
       !(await showConfirmationDialog(this, {
-        title: "Remove tag?",
-        text: `Are you sure you want to remove tag ${
+        title: this.hass!.localize("ui.panel.config.tag.confirm_remove_title"),
+        text: this.hass.localize(
+          "ui.panel.config.tag.confirm_remove",
+          "tag",
           selectedTag.name || selectedTag.id
-        }?`,
-        dismissText: this.hass!.localize("ui.common.no"),
-        confirmText: this.hass!.localize("ui.common.yes"),
+        ),
+        dismissText: this.hass!.localize("ui.common.cancel"),
+        confirmText: this.hass!.localize("ui.common.remove"),
       }))
     ) {
       return false;

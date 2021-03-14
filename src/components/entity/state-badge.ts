@@ -37,11 +37,18 @@ export class StateBadge extends LitElement {
   protected render(): TemplateResult {
     const stateObj = this.stateObj;
 
-    if (!stateObj || !this._showIcon) {
+    // We either need a `stateObj` or one override
+    if (!stateObj && !this.overrideIcon && !this.overrideImage) {
+      return html`<div class="missing">
+        <ha-icon icon="hass:alert"></ha-icon>
+      </div>`;
+    }
+
+    if (!this._showIcon) {
       return html``;
     }
 
-    const domain = computeStateDomain(stateObj);
+    const domain = stateObj ? computeStateDomain(stateObj) : undefined;
 
     return html`
       <ha-icon
@@ -51,14 +58,18 @@ export class StateBadge extends LitElement {
             ? domain
             : undefined
         )}
-        data-state=${computeActiveState(stateObj)}
-        .icon=${this.overrideIcon || stateIcon(stateObj)}
+        data-state=${stateObj ? computeActiveState(stateObj) : ""}
+        .icon=${this.overrideIcon || (stateObj ? stateIcon(stateObj) : "")}
       ></ha-icon>
     `;
   }
 
   protected updated(changedProps: PropertyValues) {
-    if (!changedProps.has("stateObj") || !this.stateObj) {
+    if (
+      !changedProps.has("stateObj") &&
+      !changedProps.has("overrideImage") &&
+      !changedProps.has("overrideIcon")
+    ) {
       return;
     }
     const stateObj = this.stateObj;
@@ -104,11 +115,19 @@ export class StateBadge extends LitElement {
             // eslint-disable-next-line
             console.warn(errorMessage);
           }
-          // lowest brighntess will be around 50% (that's pretty dark)
+          // lowest brightness will be around 50% (that's pretty dark)
           iconStyle.filter = `brightness(${(brightness + 245) / 5}%)`;
         }
       }
+    } else if (this.overrideImage) {
+      let imageUrl = this.overrideImage;
+      if (this.hass) {
+        imageUrl = this.hass.hassUrl(imageUrl);
+      }
+      hostStyle.backgroundImage = `url(${imageUrl})`;
+      this._showIcon = false;
     }
+
     this._iconStyle = iconStyle;
     Object.assign(this.style, hostStyle);
   }
@@ -139,6 +158,9 @@ export class StateBadge extends LitElement {
       }
       ha-icon {
         transition: color 0.3s ease-in-out, filter 0.3s ease-in-out;
+      }
+      .missing {
+        color: #fce588;
       }
 
       ${iconColorCSS}

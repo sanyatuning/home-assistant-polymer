@@ -4,8 +4,9 @@ import {
 } from "home-assistant-js-websocket";
 import { navigate } from "../common/navigate";
 import { Context, HomeAssistant } from "../types";
+import { BlueprintInput } from "./blueprint";
 import { DeviceCondition, DeviceTrigger } from "./device_automation";
-import { Action } from "./script";
+import { Action, MODES } from "./script";
 
 export interface AutomationEntity extends HassEntityBase {
   attributes: HassEntityAttributeBase & {
@@ -14,15 +15,33 @@ export interface AutomationEntity extends HassEntityBase {
   };
 }
 
-export interface AutomationConfig {
+export type AutomationConfig =
+  | ManualAutomationConfig
+  | BlueprintAutomationConfig;
+
+export interface ManualAutomationConfig {
   id?: string;
-  alias: string;
-  description: string;
+  alias?: string;
+  description?: string;
   trigger: Trigger[];
   condition?: Condition[];
   action: Action[];
-  mode?: "single" | "restart" | "queued" | "parallel";
+  mode?: typeof MODES[number];
   max?: number;
+  max_exceeded?:
+    | "silent"
+    | "critical"
+    | "fatal"
+    | "error"
+    | "warning"
+    | "warn"
+    | "info"
+    | "debug"
+    | "notset";
+}
+
+export interface BlueprintAutomationConfig extends ManualAutomationConfig {
+  use_blueprint: { path: string; input?: BlueprintInput };
 }
 
 export interface ForDict {
@@ -109,10 +128,17 @@ export interface TemplateTrigger {
   value_template: string;
 }
 
+export interface ContextConstraint {
+  context_id?: string;
+  parent_id?: string;
+  user_id?: string | string[];
+}
+
 export interface EventTrigger {
   platform: "event";
   event_type: string;
-  event_data: any;
+  event_data?: any;
+  context?: ContextConstraint;
 }
 
 export type Trigger =
@@ -133,18 +159,22 @@ export type Trigger =
 
 export interface LogicalCondition {
   condition: "and" | "not" | "or";
+  alias?: string;
   conditions: Condition[];
 }
 
 export interface StateCondition {
   condition: "state";
+  alias?: string;
   entity_id: string;
   attribute?: string;
   state: string | number;
+  for?: string | number | ForDict;
 }
 
 export interface NumericStateCondition {
   condition: "numeric_state";
+  alias?: string;
   entity_id: string;
   attribute?: string;
   above?: number;
@@ -154,6 +184,7 @@ export interface NumericStateCondition {
 
 export interface SunCondition {
   condition: "sun";
+  alias?: string;
   after_offset: number;
   before_offset: number;
   after: "sunrise" | "sunset";
@@ -162,12 +193,14 @@ export interface SunCondition {
 
 export interface ZoneCondition {
   condition: "zone";
+  alias?: string;
   entity_id: string;
   zone: string;
 }
 
 export interface TimeCondition {
   condition: "time";
+  alias?: string;
   after?: string;
   before?: string;
   weekday?: string | string[];
@@ -175,6 +208,7 @@ export interface TimeCondition {
 
 export interface TemplateCondition {
   condition: "template";
+  alias?: string;
   value_template: string;
 }
 
@@ -188,9 +222,13 @@ export type Condition =
   | DeviceCondition
   | LogicalCondition;
 
-export const triggerAutomation = (hass: HomeAssistant, entityId: string) => {
+export const triggerAutomationActions = (
+  hass: HomeAssistant,
+  entityId: string
+) => {
   hass.callService("automation", "trigger", {
     entity_id: entityId,
+    skip_condition: true,
   });
 };
 

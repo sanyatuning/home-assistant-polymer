@@ -2,6 +2,7 @@ import {
   Connection,
   getCollection,
   HassEventBase,
+  HassServiceTarget,
 } from "home-assistant-js-websocket";
 import { HASSDomEvent } from "../common/dom/fire_event";
 import { HuiErrorCard } from "../panels/lovelace/cards/hui-error-card";
@@ -33,7 +34,7 @@ export interface LovelaceResource {
 }
 
 export interface LovelaceResourcesMutableParams {
-  res_type: "css" | "js" | "module" | "html";
+  res_type: LovelaceResource["type"];
   url: string;
 }
 
@@ -89,6 +90,7 @@ export interface LovelaceViewConfig {
 export interface LovelaceViewElement extends HTMLElement {
   hass?: HomeAssistant;
   lovelace?: Lovelace;
+  narrow?: boolean;
   index?: number;
   cards?: Array<LovelaceCard | HuiErrorCard>;
   badges?: LovelaceBadge[];
@@ -119,8 +121,8 @@ export interface ToggleActionConfig extends BaseActionConfig {
 export interface CallServiceActionConfig extends BaseActionConfig {
   action: "call-service";
   service: string;
+  target?: HassServiceTarget;
   service_data?: {
-    entity_id?: string | [string];
     [key: string]: any;
   };
 }

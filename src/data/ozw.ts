@@ -63,6 +63,24 @@ export interface OZWNetworkStatistics {
   retries: number;
 }
 
+export interface OZWDeviceConfig {
+  label: string;
+  type: string;
+  value: string | number;
+  parameter: number;
+  min: number;
+  max: number;
+  help: string;
+}
+
+export interface OZWMigrationData {
+  migration_device_map: Record<string, string>;
+  zwave_entity_ids: string[];
+  ozw_entity_ids: string[];
+  migration_entity_map: Record<string, string>;
+  migrated: boolean;
+}
+
 export const nodeQueryStages = [
   "ProtocolInfo",
   "Probe",
@@ -137,7 +155,7 @@ export const fetchOZWNetworkStatus = (
 ): Promise<OZWInstance> =>
   hass.callWS({
     type: "ozw/network_status",
-    ozw_instance: ozw_instance,
+    ozw_instance,
   });
 
 export const fetchOZWNetworkStatistics = (
@@ -146,7 +164,7 @@ export const fetchOZWNetworkStatistics = (
 ): Promise<OZWNetworkStatistics> =>
   hass.callWS({
     type: "ozw/network_statistics",
-    ozw_instance: ozw_instance,
+    ozw_instance,
   });
 
 export const fetchOZWNodes = (
@@ -155,7 +173,7 @@ export const fetchOZWNodes = (
 ): Promise<OZWDevice[]> =>
   hass.callWS({
     type: "ozw/get_nodes",
-    ozw_instance: ozw_instance,
+    ozw_instance,
   });
 
 export const fetchOZWNodeStatus = (
@@ -165,8 +183,8 @@ export const fetchOZWNodeStatus = (
 ): Promise<OZWDevice> =>
   hass.callWS({
     type: "ozw/node_status",
-    ozw_instance: ozw_instance,
-    node_id: node_id,
+    ozw_instance,
+    node_id,
   });
 
 export const fetchOZWNodeMetadata = (
@@ -176,8 +194,19 @@ export const fetchOZWNodeMetadata = (
 ): Promise<OZWDeviceMetaDataResponse> =>
   hass.callWS({
     type: "ozw/node_metadata",
-    ozw_instance: ozw_instance,
-    node_id: node_id,
+    ozw_instance,
+    node_id,
+  });
+
+export const fetchOZWNodeConfig = (
+  hass: HomeAssistant,
+  ozw_instance: number,
+  node_id: number
+): Promise<OZWDeviceConfig[]> =>
+  hass.callWS({
+    type: "ozw/get_config_parameters",
+    ozw_instance,
+    node_id,
   });
 
 export const refreshNodeInfo = (
@@ -187,6 +216,15 @@ export const refreshNodeInfo = (
 ): Promise<OZWDevice> =>
   hass.callWS({
     type: "ozw/refresh_node_info",
-    ozw_instance: ozw_instance,
-    node_id: node_id,
+    ozw_instance,
+    node_id,
+  });
+
+export const migrateZwave = (
+  hass: HomeAssistant,
+  dry_run = true
+): Promise<OZWMigrationData> =>
+  hass.callWS({
+    type: "ozw/migrate_zwave",
+    dry_run,
   });

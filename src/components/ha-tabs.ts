@@ -1,6 +1,6 @@
-import "@polymer/paper-tabs/paper-tabs";
 import type { PaperIconButtonElement } from "@polymer/paper-icon-button/paper-icon-button";
 import type { PaperTabElement } from "@polymer/paper-tabs/paper-tab";
+import "@polymer/paper-tabs/paper-tabs";
 import type { PaperTabsElement } from "@polymer/paper-tabs/paper-tabs";
 import { customElement } from "lit-element";
 import { Constructor } from "../types";
@@ -34,14 +34,17 @@ export class HaTabs extends PaperTabs {
 
       superStyle!.appendChild(
         document.createTextNode(`
+          #selectionBar {
+            box-sizing: border-box;
+          }
           .not-visible {
             display: none;
           }
-          :host > paper-icon-button:first-of-type {
-            padding-left: 0;
-          }
           paper-icon-button {
-            margin: 0 -8px 0 0;
+            width: 24px;
+            height: 48px;
+            padding: 0;
+            margin: 0;
           }
         `)
       );
@@ -85,7 +88,7 @@ export class HaTabs extends PaperTabs {
 
     if (this._lastLeftHiddenState !== this._leftHidden) {
       this._lastLeftHiddenState = this._leftHidden;
-      this.$.tabsContainer.scrollLeft += this._leftHidden ? -46 : 46;
+      this.$.tabsContainer.scrollLeft += this._leftHidden ? -23 : 23;
     }
   }
 }

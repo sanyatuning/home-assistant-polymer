@@ -30,7 +30,7 @@ class HcLayout extends LitElement {
       <ha-card>
         <div class="layout">
           <img class="hero" src="/images/google-nest-hub.png" />
-          <div class="card-header">
+          <h1 class="card-header">
             Home Assistant Cast${this.subtitle ? ` – ${this.subtitle}` : ""}
             ${this.auth
               ? html`
@@ -44,7 +44,7 @@ class HcLayout extends LitElement {
                   </div>
                 `
               : ""}
-          </div>
+          </h1>
           <slot></slot>
         </div>
       </ha-card>
@@ -98,8 +98,12 @@ class HcLayout extends LitElement {
         line-height: 32px;
         padding: 24px 16px 16px;
         display: block;
+        margin: 0;
       }
 
+      .hero {
+        border-radius: 4px 4px 0 0;
+      }
       .subtitle {
         font-size: 14px;
         color: var(--secondary-text-color);

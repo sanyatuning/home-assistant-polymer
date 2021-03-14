@@ -2,14 +2,18 @@ import { css } from "lit-element";
 
 export const configElementStyle = css`
   ha-switch {
-    padding: 16px 0;
+    padding: 16px 6px;
   }
   .side-by-side {
     display: flex;
   }
   .side-by-side > * {
     flex: 1;
-    padding-right: 4px;
+    padding-right: 8px;
+  }
+  .side-by-side > *:last-child {
+    flex: 1;
+    padding-right: 0;
   }
   .suffix {
     margin: 0 8px;

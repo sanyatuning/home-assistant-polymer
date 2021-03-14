@@ -1,4 +1,3 @@
-import "../../../src/components/ha-file-upload";
 import "@material/mwc-icon-button/mwc-icon-button";
 import { mdiFolderUpload } from "@mdi/js";
 import "@polymer/iron-input/iron-input";
@@ -12,19 +11,23 @@ import {
 } from "lit-element";
 import { fireEvent } from "../../../src/common/dom/fire_event";
 import "../../../src/components/ha-circular-progress";
+import "../../../src/components/ha-file-upload";
 import "../../../src/components/ha-svg-icon";
+import { extractApiErrorMessage } from "../../../src/data/hassio/common";
 import {
   HassioSnapshot,
   uploadSnapshot,
 } from "../../../src/data/hassio/snapshot";
-import { HomeAssistant } from "../../../src/types";
 import { showAlertDialog } from "../../../src/dialogs/generic/show-dialog-box";
+import { HomeAssistant } from "../../../src/types";
 
 declare global {
   interface HASSDomEvents {
     "snapshot-uploaded": { snapshot: HassioSnapshot };
   }
 }
+
+const MAX_FILE_SIZE = 1 * 1024 * 1024 * 1024; // 1GB
 
 @customElement("hassio-upload-snapshot")
 export class HassioUploadSnapshot extends LitElement {
@@ -50,6 +53,20 @@ export class HassioUploadSnapshot extends LitElement {
   private async _uploadFile(ev) {
     const file = ev.detail.files[0];
 
+    if (file.size > MAX_FILE_SIZE) {
+      showAlertDialog(this, {
+        title: "Snapshot file is too big",
+        text: html`The maximum allowed filesize is 1GB.<br />
+          <a
+            href="https://www.home-assistant.io/hassio/haos_common_tasks/#restoring-a-snapshot-on-a-new-install"
+            target="_blank"
+            >Have a look here on how to restore it.</a
+          >`,
+        confirmText: "ok",
+      });
+      return;
+    }
+
     if (!["application/x-tar"].includes(file.type)) {
       showAlertDialog(this, {
         title: "Unsupported file format",
@@ -65,7 +82,7 @@ export class HassioUploadSnapshot extends LitElement {
     } catch (err) {
       showAlertDialog(this, {
         title: "Upload failed",
-        text: err.toString(),
+        text: extractApiErrorMessage(err),
         confirmText: "ok",
       });
     } finally {

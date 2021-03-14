@@ -10,12 +10,11 @@ class HaLabeledSlider extends PolymerElement {
       <style>
         :host {
           display: block;
-          border-radius: 4px;
         }
 
         .title {
-          margin-bottom: 16px;
-          color: var(--secondary-text-color);
+          margin: 5px 0 8px;
+          color: var(--primary-text-color);
         }
 
         .slider-container {
@@ -30,6 +29,7 @@ class HaLabeledSlider extends PolymerElement {
         ha-slider {
           flex-grow: 1;
           background-image: var(--ha-slider-background);
+          border-radius: 4px;
         }
       </style>
 
@@ -42,7 +42,6 @@ class HaLabeledSlider extends PolymerElement {
           max="[[max]]"
           step="[[step]]"
           pin="[[pin]]"
-          disabled="[[disabled]]"
           disabled="[[disabled]]"
           value="{{value}}"
         ></ha-slider>

@@ -61,6 +61,12 @@ export class HaTabsSubpageDataTable extends LitElement {
   @property({ type: Boolean }) public hasFab = false;
 
   /**
+   * Add an extra row at the bottom of the data table
+   * @type {TemplateResult}
+   */
+  @property({ attribute: false }) public appendRow?;
+
+  /**
    * Field with a unique id per entry in data.
    * @type {String}
    */
@@ -171,6 +177,7 @@ export class HaTabsSubpageDataTable extends LitElement {
           .noDataText=${this.noDataText}
           .dir=${computeRTLDirection(this.hass)}
           .clickable=${this.clickable}
+          .appendRow=${this.appendRow}
         >
           ${!this.narrow
             ? html`
@@ -227,7 +234,7 @@ export class HaTabsSubpageDataTable extends LitElement {
         --data-table-border-width: 0;
       }
       :host(:not([narrow])) ha-data-table {
-        height: calc(100vh - 65px);
+        height: calc(100vh - 1px - var(--header-height));
         display: block;
       }
       .table-header {

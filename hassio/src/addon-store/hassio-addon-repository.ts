@@ -15,6 +15,7 @@ import {
   HassioAddonInfo,
   HassioAddonRepository,
 } from "../../../src/data/hassio/addon";
+import { Supervisor } from "../../../src/data/supervisor/supervisor";
 import { HomeAssistant } from "../../../src/types";
 import "../components/hassio-card-content";
 import { filterAndSort } from "../components/hassio-filter-addons";
@@ -23,9 +24,11 @@ import { hassioStyle } from "../resources/hassio-style";
 class HassioAddonRepositoryEl extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
 
-  @property() public repo!: HassioAddonRepository;
+  @property({ attribute: false }) public supervisor!: Supervisor;
 
-  @property() public addons!: HassioAddonInfo[];
+  @property({ attribute: false }) public repo!: HassioAddonRepository;
+
+  @property({ attribute: false }) public addons!: HassioAddonInfo[];
 
   @property() public filter!: string;
 
@@ -54,7 +57,11 @@ class HassioAddonRepositoryEl extends LitElement {
       return html`
         <div class="content">
           <p class="description">
-            No results found in "${repo.name}."
+            ${this.supervisor.localize(
+              "store.no_results_found",
+              "repository",
+              repo.name
+            )}
           </p>
         </div>
       `;
@@ -78,18 +85,20 @@ class HassioAddonRepositoryEl extends LitElement {
                     .title=${addon.name}
                     .description=${addon.description}
                     .available=${addon.available}
-                    .icon=${addon.installed && addon.installed !== addon.version
+                    .icon=${addon.installed && addon.update_available
                       ? mdiArrowUpBoldCircle
                       : mdiPuzzle}
                     .iconTitle=${addon.installed
-                      ? addon.installed !== addon.version
-                        ? "New version available"
-                        : "Add-on is installed"
+                      ? addon.update_available
+                        ? this.supervisor.localize(
+                            "common.new_version_available"
+                          )
+                        : this.supervisor.localize("addon.installed")
                       : addon.available
-                      ? "Add-on is not installed"
-                      : "Add-on is not available on your system"}
+                      ? this.supervisor.localize("addon.not_installed")
+                      : this.supervisor.localize("addon.not_available")}
                     .iconClass=${addon.installed
-                      ? addon.installed !== addon.version
+                      ? addon.update_available
                         ? "update"
                         : "installed"
                       : !addon.available
@@ -104,7 +113,7 @@ class HassioAddonRepositoryEl extends LitElement {
                       : undefined}
                     .showTopbar=${addon.installed || !addon.available}
                     .topbarClass=${addon.installed
-                      ? addon.installed !== addon.version
+                      ? addon.update_available
                         ? "update"
                         : "installed"
                       : !addon.available
